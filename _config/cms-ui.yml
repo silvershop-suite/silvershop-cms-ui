@@ -1,0 +1,9 @@
+---
+Name: silvershop-cms-ui
+---
+# v1 is CSS-only: the stylesheet is loaded CMS-wide but every rule is gated behind an opt-in class
+# (.ss-grid / .ss-panel*), so a form that does not use the primitives is untouched. No JavaScript and
+# no LeftAndMain extension are needed (the collapsible-panel JS is deferred to v2).
+SilverStripe\Admin\LeftAndMain:
+  extra_requirements_css:
+    - 'silvershop/cms-ui:client/css/cms-ui.css'

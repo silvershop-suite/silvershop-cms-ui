@@ -1,0 +1,3 @@
+it:
+  'SilverShop\CmsUi\Forms\PanelField':
+    DEFAULT_TITLE: 'Pannello'
