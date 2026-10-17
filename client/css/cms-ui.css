@@ -515,6 +515,12 @@
     border-bottom: 1px solid var(--ss-panel-border);
 }
 
+/* A GridField's title/count row (grid-field__title-row, inside <thead>) duplicates the panel header and the
+   bottom pager's count; drop it in a panel so the column headers become the clean top of the table. */
+.ss-panel__body .grid-field__table .grid-field__title-row {
+    display: none !important;
+}
+
 /* A headerless panel: a PanelField with no title/count/actions is just the rounded white card.
    Collapse the empty head holder so there is no bar. */
 .ss-panel__head-holder:empty {
@@ -562,3 +568,62 @@
 .CompositeField.ss-panel > .form__field-holder > .ss-panel__style::after {
     display: none !important;
 }
+
+/* ================================================================== *
+ * 5. Status styling — badges (.ss-badge--*) + row tints (.ss-grid-colored-rows / .ss-grid-row--*).
+ * Applied opt-in by GridFieldStatusExtension ($grid->addStatusBadges() / colorRowsByStatus()).
+ * Outline style matched to xddesigners/better-badges (same font-size / padding / radius / 1px border):
+ * text + border share the semantic colour, a light shade sits behind, rounded corners. Colours are the
+ * fixed hex better-badges ships; px dimensions to match its pixel design 1:1. Inert until a class is present.
+ * ================================================================== */
+:root {
+    --ss-badge-success: #0a6b0a; --ss-badge-success-bg: #e0f1e0;
+    --ss-badge-warning: #c23a00; --ss-badge-warning-bg: #ffede0;
+    --ss-badge-danger:  #9b2828; --ss-badge-danger-bg:  #f3e5e5;
+    --ss-badge-info:    #136ca5; --ss-badge-info-bg:    #e4f2fc;
+    --ss-badge-neutral: #455b6c; --ss-badge-neutral-bg: #f1f3f6;
+}
+
+/* Dark mode: the SS6 admin toggles dark via Bootstrap's `data-bs-theme="dark"` attribute (NOT
+   prefers-color-scheme), so key off that — otherwise the badges would flip dark on a still-light admin
+   whenever the OS is dark. better-badges-outline ships no dark variant, so we supply fixed BS5.3-dark
+   subtle-triad values (brighter ink, dark shade): legible on the dark admin, self-contained. Devs override
+   these vars (or the $status_tokens map) as needed; the row tints follow automatically (color-mix). */
+[data-bs-theme="dark"] {
+    --ss-badge-success: #75b798; --ss-badge-success-bg: #051b11;
+    --ss-badge-warning: #ffda6a; --ss-badge-warning-bg: #332701;
+    --ss-badge-danger:  #ea868f; --ss-badge-danger-bg:  #2c0b0e;
+    --ss-badge-info:    #6edff6; --ss-badge-info-bg:    #032830;
+    --ss-badge-neutral: #9aa4b2; --ss-badge-neutral-bg: #2b3139;
+}
+
+/* Badge pill — better-badges outline: text + 1px border the same colour, a light shade behind, 4px corners.
+   Self-sufficient; also composes with the admin's native .badge when present. */
+.ss-badge {
+    display: inline-block;
+    padding: 2px 7px !important;
+    border: 1px solid transparent !important;
+    border-radius: 4px !important;
+    font-size: 10px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+    white-space: nowrap;
+}
+.ss-badge--success { color: var(--ss-badge-success) !important; background: var(--ss-badge-success-bg) !important; border-color: var(--ss-badge-success) !important; }
+.ss-badge--warning { color: var(--ss-badge-warning) !important; background: var(--ss-badge-warning-bg) !important; border-color: var(--ss-badge-warning) !important; }
+.ss-badge--danger  { color: var(--ss-badge-danger) !important;  background: var(--ss-badge-danger-bg) !important;  border-color: var(--ss-badge-danger) !important; }
+.ss-badge--info    { color: var(--ss-badge-info) !important;    background: var(--ss-badge-info-bg) !important;    border-color: var(--ss-badge-info) !important; }
+.ss-badge--neutral { color: var(--ss-badge-neutral) !important; background: var(--ss-badge-neutral-bg) !important; border-color: var(--ss-badge-neutral) !important; }
+
+/* Row tint — a light wash of the SAME semantic colour as the badge (color-mix over any row background,
+   a touch stronger on hover). Scoped to a grid that opted in via colorRowsByStatus(). */
+.ss-grid-colored-rows tbody tr.ss-grid-row--success { background: color-mix(in srgb, var(--ss-badge-success) 8%, transparent); }
+.ss-grid-colored-rows tbody tr.ss-grid-row--success:hover { background: color-mix(in srgb, var(--ss-badge-success) 15%, transparent); }
+.ss-grid-colored-rows tbody tr.ss-grid-row--warning { background: color-mix(in srgb, var(--ss-badge-warning) 8%, transparent); }
+.ss-grid-colored-rows tbody tr.ss-grid-row--warning:hover { background: color-mix(in srgb, var(--ss-badge-warning) 15%, transparent); }
+.ss-grid-colored-rows tbody tr.ss-grid-row--danger { background: color-mix(in srgb, var(--ss-badge-danger) 8%, transparent); }
+.ss-grid-colored-rows tbody tr.ss-grid-row--danger:hover { background: color-mix(in srgb, var(--ss-badge-danger) 15%, transparent); }
+.ss-grid-colored-rows tbody tr.ss-grid-row--info { background: color-mix(in srgb, var(--ss-badge-info) 8%, transparent); }
+.ss-grid-colored-rows tbody tr.ss-grid-row--info:hover { background: color-mix(in srgb, var(--ss-badge-info) 15%, transparent); }
+.ss-grid-colored-rows tbody tr.ss-grid-row--neutral { background: color-mix(in srgb, var(--ss-badge-neutral) 6%, transparent); }
+.ss-grid-colored-rows tbody tr.ss-grid-row--neutral:hover { background: color-mix(in srgb, var(--ss-badge-neutral) 12%, transparent); }

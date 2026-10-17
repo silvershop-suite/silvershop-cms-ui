@@ -7,3 +7,12 @@ Name: silvershop-cms-ui
 SilverStripe\Admin\LeftAndMain:
   extra_requirements_css:
     - 'silvershop/cms-ui:client/css/cms-ui.css'
+
+---
+Name: silvershop-cms-ui-gridfield-status
+---
+# Status styling for GridFields: adds $grid->addStatusBadges() / colorRowsByStatus() / hideStatusFlags()
+# and the updateNewRowClasses row hook to every GridField. Opt-in — inert until a method is called.
+SilverStripe\Forms\GridField\GridField:
+  extensions:
+    - SilverShop\CmsUi\Extensions\GridFieldStatusExtension
