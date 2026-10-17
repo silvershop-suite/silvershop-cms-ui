@@ -45,6 +45,11 @@ class PanelField extends CompositeField
 
     protected bool $flush = false;
 
+    /** Per-instance class + injected-<style> name for setBodyMaxHeight() (scrollable body). */
+    protected string $scrollClass = '';
+
+    protected string $scrollStyleName = '';
+
     protected LiteralField $headField;
 
     protected CompositeField $bodyField;
@@ -182,6 +187,84 @@ class PanelField extends CompositeField
     public function getFlush(): bool
     {
         return $this->flush;
+    }
+
+    /**
+     * Remove the card elevation (drop-shadow) — for a sub-section panel that should read flat rather
+     * than as a floating card. Adds `.ss-panel--flat`. A panel nested inside another panel's body is
+     * flattened automatically; use this to force a flat panel anywhere.
+     */
+    public function setFlat(bool $flat = true): static
+    {
+        if ($flat) {
+            $this->addExtraClass('ss-panel--flat');
+        } else {
+            $this->removeExtraClass('ss-panel--flat');
+        }
+        return $this;
+    }
+
+    /**
+     * Cap the body height and scroll on overflow: the head stays fixed and the body gets a vertical
+     * scrollbar once its content exceeds $maxHeight (any CSS length — '20em', '320px',
+     * 'calc(100vh - 20em)'). Pass null or '' to clear. Implemented like GridLayoutField::setGridTemplate():
+     * a per-instance class plus a scoped <style> injected as a hidden child, so there is no reliance on
+     * inline style attributes. Adds `.ss-panel--scroll`.
+     */
+    public function setBodyMaxHeight(?string $maxHeight): static
+    {
+        // Clear any previously applied cap (its injected <style> child + per-instance class).
+        if ($this->scrollStyleName !== '') {
+            $this->getChildren()->removeByName($this->scrollStyleName);
+        }
+        if ($this->scrollClass !== '') {
+            $this->removeExtraClass($this->scrollClass);
+        }
+        $this->removeExtraClass('ss-panel--scroll');
+        $this->scrollClass = '';
+        $this->scrollStyleName = '';
+
+        $maxHeight = $maxHeight === null ? '' : trim($maxHeight);
+        if ($maxHeight === '') {
+            return $this;
+        }
+        $safe = $this->sanitiseLength($maxHeight);
+        if ($safe === '') {
+            return $this;
+        }
+
+        $hash = substr(md5($safe), 0, 10);
+        $this->scrollClass = 'ss-panel-maxh-' . $hash;
+        $this->scrollStyleName = 'SSPanelMaxH_' . $hash;
+        $this->addExtraClass('ss-panel--scroll');
+        $this->addExtraClass($this->scrollClass);
+
+        $selector = sprintf(
+            '.CompositeField.ss-panel.%s > .form__field-holder > .ss-panel__body',
+            $this->scrollClass
+        );
+        // overflow-x:hidden is required: setting overflow-y:auto alone makes the CSS spec compute overflow-x
+        // from visible to auto, so the vertical scrollbar's width triggers a spurious horizontal scrollbar.
+        $css = sprintf(
+            '%s{max-height:%s !important;overflow-y:auto !important;overflow-x:hidden !important}',
+            $selector,
+            $safe
+        );
+        $style = LiteralField::create($this->scrollStyleName, '<style>' . $css . '</style>');
+        $style->addExtraClass('ss-panel__style');
+        $this->getChildren()->unshift($style);
+
+        return $this;
+    }
+
+    /**
+     * Whitelist the characters a CSS length / calc() legitimately needs, so the value can't break out of
+     * the injected <style> rule (no `<`, `>`, `{`, `}`, `;`, `:` or quotes).
+     */
+    protected function sanitiseLength(string $value): string
+    {
+        $clean = preg_replace('/[^A-Za-z0-9%.,()\-\s]/', '', $value) ?? '';
+        return trim(preg_replace('/\s+/', ' ', $clean) ?? '');
     }
 
     /**

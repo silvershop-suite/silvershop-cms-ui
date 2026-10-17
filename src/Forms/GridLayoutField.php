@@ -163,6 +163,21 @@ class GridLayoutField extends CompositeField
     }
 
     /**
+     * Show/hide the field separator line under the grid. By default a grid carries the admin's field
+     * separator (so it spaces like a normal field); setSeparator(false) drops the line while keeping the
+     * grid's own vertical + horizontal gaps (`.ss-grid--no-sep`).
+     */
+    public function setSeparator(bool $show): static
+    {
+        if ($show) {
+            $this->removeExtraClass('ss-grid--no-sep');
+        } else {
+            $this->addExtraClass('ss-grid--no-sep');
+        }
+        return $this;
+    }
+
+    /**
      * Let the grid span the full form width. By default a grid keeps the admin's readable holder
      * width (like a normal field); enableFullWidth() breaks it out to the whole form row — the
      * full-page-width mechanism, useful for wide, column-heavy layouts.
@@ -173,6 +188,22 @@ class GridLayoutField extends CompositeField
             $this->addExtraClass('ss-grid-full');
         } else {
             $this->removeExtraClass('ss-grid-full');
+        }
+        return $this;
+    }
+
+    /**
+     * Make every column in the row the same height: the tallest cell sets the height and the others
+     * stretch to match (CSS grid `align-items: stretch`), and a PanelField child fills its cell so a row
+     * of cards lines up flush. Off by default (each cell sizes to its own content, top-aligned). Adds
+     * `.ss-grid--equal`.
+     */
+    public function setEqualHeight(bool $equal = true): static
+    {
+        if ($equal) {
+            $this->addExtraClass('ss-grid--equal');
+        } else {
+            $this->removeExtraClass('ss-grid--equal');
         }
         return $this;
     }

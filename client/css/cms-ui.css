@@ -20,14 +20,16 @@
  * ------------------------------------------------------------------ */
 :root {
     --ss-gutter: 1.25em;                                            /* column gap / panel spacing */
-    --ss-panel-bg: var(--bs-body-bg, #fff);                        /* card surface */
+    --ss-panel-bg: var(--bs-white, #fff);                          /* card surface — WHITE inner, like ToggleCompositeField */
     --ss-panel-border: var(--bs-border-color, #ced5e1);            /* card + divider border */
     --ss-panel-radius: var(--bs-border-radius, 0.23em);            /* corner radius */
-    --ss-panel-shadow: var(--bs-box-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.08));
+    --ss-panel-shadow: none;                                       /* native look: outline only, no elevation */
+    --ss-panel-head-bg: var(--bs-tertiary-bg, #f4f6f8);            /* subtle grey header bar (native ToggleComposite) */
     --ss-panel-title-color: var(--bs-body-color, #43536d);         /* heading ink */
     --ss-panel-muted: var(--bs-secondary-color, #74809a);          /* count / muted text */
     --ss-panel-body-pad: 1.15em;                                   /* body inner padding */
     --ss-panel-head-pad: 0.85em 1.15em;                            /* head inner padding */
+    --ss-required: var(--bs-danger, #d40404);                      /* required-field asterisk */
 }
 
 /* ================================================================== *
@@ -74,6 +76,12 @@
     width: 100% !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
+}
+
+/* setSeparator(false): drop the field-separator line under the grid, keeping its own vertical +
+   horizontal gaps (the row/column gutters + the margin-bottom spacing stay). */
+.CompositeField.ss-grid--no-sep::after {
+    display: none !important;
 }
 
 /* The field-holder wrapper is the CSS grid; its .col-* children are the grid items; the grid gap
@@ -137,11 +145,11 @@
     grid-column: span 12;
 }
 
-/* A col-* class can also land on a field's inner element (e.g. OptionsetField's .optionset, an input
-   or select), which then wrongly picks up a column width. Only the grid cell (.field) should use the
-   column width — reset every other col-classed element inside the grid to full width, except
-   checkbox/radio inputs, which keep their natural (small) size. */
-.CompositeField.ss-grid [class*="col-"]:not(.field):not([type="checkbox"]):not([type="radio"]) {
+/* A col-* class can also land on a FORM CONTROL (e.g. OptionsetField's .optionset/.checkboxset, an
+   input or select), which then wrongly picks up a column width. Reset only those controls to full
+   width (except checkbox/radio inputs, which keep their natural small size). Scoped to form controls
+   so it NEVER touches a GridField's own `col-<FieldName>` table cells (that broke the grid layout). */
+.CompositeField.ss-grid :is(input, select, textarea, .optionset, .checkboxset)[class*="col-"]:not([type="checkbox"]):not([type="radio"]) {
     width: 100% !important;
     max-width: none !important;
 }
@@ -149,7 +157,9 @@
 /* A single CheckboxField has no label-above, so in a grid column its text sits a few px above the
    neighbours' label text. Nudge it down to share the label baseline. (Reset by the mobile rule.) */
 .CompositeField.ss-grid > .form__field-holder > .field.checkbox {
-    margin-top: var(--ss-checkbox-offset, 0.5em) !important;
+    /* A single checkbox has no label-above, so in a grid row it would sit level with the neighbours'
+       LABELS. Nudge it down ~a label's height so it lines up with their inputs instead. */
+    margin-top: var(--ss-checkbox-offset, 1.7em) !important;
 }
 
 /* The label sits above the input in a grid/multicolumn column, so drop the admin's left padding
@@ -157,6 +167,25 @@
 .CompositeField.ss-grid label.form-label,
 .CompositeField.multicolumn label.form-label {
     padding-left: 0 !important;
+}
+
+/* Required-field asterisk. Stock SS6 server-rendered CMS forms give a required control the HTML5
+   `required` attribute (FormField::getAttributes) but render NO visible marker. Within a cms-ui
+   container, append a red * to the label of any field whose control is :required. (:has() is
+   modern-browser only — fine in the CMS6 admin.) */
+.CompositeField.ss-grid .form-group:has(:required) > label.form-label::after,
+.CompositeField.ss-panel .form-group:has(:required) > label.form-label::after {
+    content: " *";
+    color: var(--ss-required, #d40404);
+    font-weight: 700;
+}
+
+/* Inline option sets. Add ->addExtraClass('ss-inline') to an OptionsetField / CheckboxSetField to lay
+   its options out in a horizontal, wrapping row instead of stacked (adopted from better-forms). */
+.field.ss-inline .form-check {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 1.25em;
 }
 
 /* Map Bootstrap .col-* classes to grid spans (descendant selector, so nested grids map too). */
@@ -303,6 +332,14 @@
     margin: 0 !important;
 }
 
+/* A panel nested inside another panel's body is a sub-section, not a floating card — drop the
+   elevation (shadow) so it reads as a grouped area; the border stays as the boundary. Force it
+   anywhere with PanelField->setFlat() (.ss-panel--flat). */
+.ss-panel__body .ss-panel,
+.CompositeField.ss-panel--flat {
+    box-shadow: none !important;
+}
+
 /* The panel's one wrapper stacks head above body. */
 .CompositeField.ss-panel > .form__field-holder {
     display: block !important;
@@ -332,6 +369,7 @@
     justify-content: space-between;
     gap: 0.75em;
     padding: var(--ss-panel-head-pad);
+    background: var(--ss-panel-head-bg);
     border-bottom: 1px solid var(--ss-panel-border);
 }
 
@@ -344,8 +382,8 @@
 
 .ss-panel__title {
     margin: 0;
-    font-size: 1.15em;
-    font-weight: 600;
+    font-size: 1em;
+    font-weight: 400;
     line-height: 1.3;
     color: var(--ss-panel-title-color);
 }
@@ -425,11 +463,102 @@
     overflow-x: auto !important;
 }
 
+/* A GridField inside a panel fills the body width so its columns distribute within the card rather than
+   overflowing. (The flush body already removes padding + allows horizontal scroll for very wide grids.) */
+.ss-panel__body .grid-field,
+.ss-panel__body .grid-field__table {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* A GridField sits tight in the card: drop the admin's top margin, and remove the body's vertical gap
+   around it (keeping the left/right padding so columns align with the title). */
+.ss-panel__body .grid-field {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+.ss-panel__body > .form__field-holder:has(> .grid-field) {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+/* …but a grid WITH a toolbar/search header (full config) needs breathing room above it: the admin's
+   toolbar is pulled up with a -20px top margin (cancelled below), which otherwise jams the export/search
+   row flush against the panel header. Restore the body's top padding for those only — the toolbar-less
+   reduced grids above stay tight. (The more specific :has() argument wins over the padding-top:0 rule.) */
+.ss-panel__body > .form__field-holder:has(.grid-field .toolbar--content) {
+    padding-top: var(--ss-panel-body-pad) !important;
+}
+
+/* GridField cell data stays aligned under its (left-aligned) column header. The admin can right-align
+   the last column, which then floats to the card's right edge away from its header title. */
+.ss-panel__body .grid-field__table td {
+    text-align: left !important;
+}
+
+/* GridField toolbar + search header inside a panel. The admin breaks these rows out with negative side
+   margins sized to the ModelAdmin's 20px content gutter; inside a card that shoves an action-light grid's
+   collapsed search trigger hard against the rounded top-right corner (it looks detached). Pull the breakout
+   back inside the card so the search sits within the padding, and frame the toolbar row with a bottom
+   separator so it reads as an intentional header — the way a native ModelAdmin grid's toolbar does. */
+.ss-panel__body .grid-field .toolbar--content,
+.ss-panel__body .grid-field .cms-content-filters {
+    /* The admin pulls these up -20px (its ModelAdmin gutter breakout). Soften to -10px rather than 0: with
+       the restored body top padding that leaves a tight ~5px gap above the toolbar — the balance picked in
+       DevTools. px (not em) here to track the admin's own px breakout 1:1. */
+    margin-top: -10px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+.ss-panel__body .grid-field .toolbar--content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    border-bottom: 1px solid var(--ss-panel-border);
+}
+
+/* A headerless panel: a PanelField with no title/count/actions is just the rounded white card.
+   Collapse the empty head holder so there is no bar. */
+.ss-panel__head-holder:empty {
+    display: none !important;
+}
+
 /* Trim the trailing separator/space on the body's last field so it doesn't float above the card edge. */
 .CompositeField.ss-panel__body > .form__field-holder > .field:last-child {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
 }
 .CompositeField.ss-panel__body > .form__field-holder > .field:last-child::after {
+    display: none !important;
+}
+
+/* ================================================================== *
+ * 4. Sizing options — equal-height grid rows (.ss-grid--equal) + scrollable panel body (.ss-panel--scroll)
+ * ================================================================== */
+
+/* Equal-height row: GridLayoutField->setEqualHeight(). Override the grid's default top-alignment
+   (align-items: start, §1) so every cell stretches to the tallest, and turn a PanelField child into a
+   flex column so its body grows to fill — a row of cards then lines up flush, same height. */
+.CompositeField.ss-grid.ss-grid--equal > .form__field-holder {
+    align-items: stretch !important;
+}
+.CompositeField.ss-grid--equal > .form__field-holder > .ss-panel {
+    display: flex !important;
+    flex-direction: column !important;
+}
+.CompositeField.ss-grid--equal > .form__field-holder > .ss-panel > .form__field-holder {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+.CompositeField.ss-grid--equal > .form__field-holder > .ss-panel > .form__field-holder > .ss-panel__body {
+    flex: 1 1 auto !important;
+}
+
+/* Scrollable body: PanelField->setBodyMaxHeight() injects the per-instance max-height + overflow rule as a
+   scoped <style>; here we only hide its <style> carrier child (the first child of the panel wrapper) so it
+   adds no field spacing. The card's own overflow:hidden clips the body scrollbar to the rounded corners. */
+.CompositeField.ss-panel > .form__field-holder > .ss-panel__style {
+    display: none !important;
+}
+.CompositeField.ss-panel > .form__field-holder > .ss-panel__style::after {
     display: none !important;
 }
