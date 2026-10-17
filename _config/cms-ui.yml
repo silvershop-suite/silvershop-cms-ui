@@ -7,6 +7,7 @@ Name: silvershop-cms-ui
 SilverStripe\Admin\LeftAndMain:
   extra_requirements_css:
     - 'silvershop/cms-ui:client/css/cms-ui.css'
+    - 'silvershop/cms-ui:client/css/ss-icons.css'   # Lucide icon webfont -> .ss-icon-* (Phase 1, full set)
 
 ---
 Name: silvershop-cms-ui-gridfield-status
