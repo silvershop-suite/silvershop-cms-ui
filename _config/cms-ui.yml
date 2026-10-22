@@ -1,13 +1,16 @@
 ---
 Name: silvershop-cms-ui
 ---
-# v1 is CSS-only: the stylesheet is loaded CMS-wide but every rule is gated behind an opt-in class
-# (.ss-grid / .ss-panel*), so a form that does not use the primitives is untouched. No JavaScript and
-# no LeftAndMain extension are needed (the collapsible-panel JS is deferred to v2).
+# The stylesheet is loaded CMS-wide but every rule is gated behind an opt-in class (.ss-grid /
+# .ss-panel* / .ss-filter-form*), so a form that does not use the primitives is untouched. The only
+# JS is the small, delegated filter-bar submit enhancement (Enter / instant select change) — inert
+# unless a GridFieldFilterForm is on the page. No LeftAndMain extension is needed.
 SilverStripe\Admin\LeftAndMain:
   extra_requirements_css:
     - 'silvershop-suite/cms-ui:client/css/cms-ui.css'
     - 'silvershop-suite/cms-ui:client/css/ss-icons.css'   # Lucide icon webfont -> .ss-icon-* (Phase 1, full set)
+  extra_requirements_javascript:
+    - 'silvershop-suite/cms-ui:client/js/gridfield-filter-form.js'
 
 ---
 Name: silvershop-cms-ui-gridfield-status

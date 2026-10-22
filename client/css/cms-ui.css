@@ -627,3 +627,163 @@
 .ss-grid-colored-rows tbody tr.ss-grid-row--info:hover { background: color-mix(in srgb, var(--ss-badge-info) 15%, transparent); }
 .ss-grid-colored-rows tbody tr.ss-grid-row--neutral { background: color-mix(in srgb, var(--ss-badge-neutral) 6%, transparent); }
 .ss-grid-colored-rows tbody tr.ss-grid-row--neutral:hover { background: color-mix(in srgb, var(--ss-badge-neutral) 12%, transparent); }
+
+/* ================================================================== *
+ * 6. GridFieldFilterForm — an ALWAYS-VISIBLE list filter bar that replaces SS6's hidden search foldout
+ * (GridFieldFilterHeader). Rendered server-side into a GridField's `before` fragment (above the table) by
+ * SilverShop\CmsUi\Forms\GridFieldFilterForm. Its fields are plain server-rendered FormField holders
+ * (`.field > .middleColumn`, `label.form-label left`) — NOT the React edit-form schema — so this layer
+ * styles those directly (and also covers the schema holder's `.form__field-holder`/`.form__field-label`
+ * in case a field renders that way). Opt-in: inert until `.ss-filter-form` is present. `em` units,
+ * --bs-*/--ss-* tokens → native blend + dark mode for free. `!important` beats the admin's field +
+ * grid-field cascade, as the module does throughout.
+ * ================================================================== */
+:root {
+    --ss-filter-cols: 3;                                 /* default field columns (set inline per instance) */
+    --ss-filter-bg: var(--bs-tertiary-bg, #f4f6f8);      /* subtle filter-bar surface (matches panel head) */
+    --ss-filter-border: var(--bs-border-color, #ced5e1); /* filter-bar outline */
+    --ss-filter-pad: 1em;                                /* filter-bar inner padding */
+}
+
+/* The filter bar: a subtle framed block above the table. Reads well standalone (a bare ModelAdmin grid)
+   and nested in a .ss-panel body alike. */
+.ss-filter-form {
+    margin: 0 0 1em 0 !important;
+    padding: var(--ss-filter-pad) !important;
+    background: var(--ss-filter-bg) !important;
+    border: 1px solid var(--ss-filter-border) !important;
+    border-radius: var(--ss-panel-radius, 0.23em) !important;
+    font-family: var(--bs-font-sans-serif, inherit);
+}
+
+/* The filter form's primary home is the TOP of a ModelAdmin LIST (above the table, under the list's own
+   toolbar), where the default no-top-margin is right. But when a GridField is embedded in a .ss-panel the
+   `before`-fragment bar would jam against the card head (and the grid's export toolbar) with no top space —
+   the same breakout concern as the §3 grid toolbar. Give it a clean top gap in that case only. */
+.ss-panel__body .ss-filter-form {
+    margin-top: var(--ss-panel-body-pad, 1.15em) !important;
+}
+
+/* Optional head label (component->setTitle()). */
+.ss-filter-form__head {
+    margin: 0 0 0.75em 0;
+}
+.ss-filter-form__title {
+    margin: 0;
+    font-size: 1em;
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--ss-panel-title-color, #43536d);
+}
+
+/* The field grid. Equal columns by default (repeat var(--ss-filter-cols)); it also carries `.ss-grid` so a
+   per-field `.col-*` span (12-track mode, component->setColumnSpans()) reuses the existing span map (§1). */
+.ss-filter-form__grid {
+    display: grid !important;
+    grid-template-columns: repeat(var(--ss-filter-cols, 3), minmax(0, 1fr)) !important;
+    column-gap: var(--ss-gutter, 1.25em) !important;
+    row-gap: 0.75em !important;
+    align-items: start !important;
+    margin: 0 !important;
+}
+
+/* Each cell is a server-rendered FormField holder (`.field`; the admin schema holder also carries `.field`).
+   Neutralise the admin's field spacing / readable-width cap / separator so the cell fills its track. */
+.ss-filter-form__grid > .field {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    border: 0 !important;
+}
+.ss-filter-form__grid > .field::after {
+    display: none !important;
+}
+
+/* Label above the input (drop the framework holder's float-left horizontal label). */
+.ss-filter-form__grid .field > label,
+.ss-filter-form__grid label.form-label,
+.ss-filter-form__grid label.form__field-label {
+    display: block !important;
+    float: none !important;
+    width: auto !important;
+    margin: 0 0 0.25em 0 !important;
+    padding: 0 !important;
+    font-size: 0.9em;
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--ss-panel-title-color, #43536d);
+}
+
+/* The input wrapper (`.middleColumn` server-side, `.form__field-holder` if a schema holder renders) and the
+   control itself fill the cell. */
+.ss-filter-form__grid .middleColumn,
+.ss-filter-form__grid .form__field-holder {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+    flex: 1 1 100% !important;
+}
+.ss-filter-form__grid :is(input, select, textarea) {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box;
+}
+
+/* A help/description line stays muted and compact. */
+.ss-filter-form__grid .field .description {
+    margin: 0.25em 0 0 0 !important;
+    font-size: 0.8em;
+    color: var(--ss-panel-muted, #74809a);
+}
+
+/* An option-set / checkbox-set inside a cell: compact, wrapping, not full-width inputs. */
+.ss-filter-form__grid .field .form-check,
+.ss-filter-form__grid .field .checkbox {
+    margin: 0.1em 0 !important;
+}
+.ss-filter-form__grid .field :is(input[type="checkbox"], input[type="radio"]) {
+    width: auto !important;
+}
+
+/* The actions row: Reset + Search, right-aligned, set off from the fields. */
+.ss-filter-form__actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: var(--ss-filter-pad, 1em);
+}
+.ss-filter-form__btn {
+    margin: 0 !important;
+}
+
+/* Inline actions: the Reset/Search buttons as a grid cell pinned to the row's right edge (next to the last
+   field) rather than the full-width bar. `span N / -1` fixes the cell's END to the grid's last column line so
+   it always reaches the right edge (auto-placement alone collapsed it to content width); drop the bar's top
+   margin and align to the row's bottom so the buttons sit on the inputs' baseline, not up at the label row.
+   (Right-align + gap come from the base.) */
+.ss-filter-form__actions--inline {
+    grid-column-start: span var(--ss-actions-span, 3);
+    grid-column-end: -1;
+    margin-top: 0 !important;
+    align-self: end;
+    padding-bottom: 1px;
+}
+
+/* Phone: stack the field grid to a single column and let the buttons fill the width. */
+@media (max-width: 767.98px) {
+    .ss-filter-form__grid {
+        grid-template-columns: 1fr !important;
+    }
+    .ss-filter-form__actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+    .ss-filter-form__btn {
+        width: 100%;
+    }
+}

@@ -1,3 +1,6 @@
 fr:
+  'SilverShop\CmsUi\Forms\GridFieldFilterForm':
+    SEARCH: 'Rechercher'
+    RESET: 'Réinitialiser'
   'SilverShop\CmsUi\Forms\PanelField':
     DEFAULT_TITLE: 'Panneau'
