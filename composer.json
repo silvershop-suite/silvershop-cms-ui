@@ -1,5 +1,5 @@
 {
-    "name": "silvershop/cms-ui",
+    "name": "silvershop-suite/cms-ui",
     "description": "Neutral, structural CMS-form layout primitives for the SilverShop suite: a responsive 12-column GridLayoutField (with an opt-in full-page-width mode and an fr-template escape hatch) and a native-blend PanelField card, so a ModelAdmin edit form can lay panels out in a grid instead of flat tab sprawl. Shop-agnostic, CSS-only, blends with the stock Silverstripe 6 admin (and its dark mode).",
     "type": "silverstripe-vendormodule",
     "keywords": ["silverstripe", "cms", "admin", "forms", "grid", "layout", "panel", "ux"],

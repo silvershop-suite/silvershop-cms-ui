@@ -27,7 +27,7 @@ opinionated skins layer on top in the consuming module.
 ## Install
 
 ```bash
-composer require silvershop/cms-ui
+composer require silvershop-suite/cms-ui
 ```
 
 The stylesheet is injected into the CMS automatically (via `LeftAndMain.extra_requirements_css`). It is
