@@ -28,7 +28,7 @@
     --ss-panel-title-color: var(--bs-body-color, #43536d);         /* heading ink */
     --ss-panel-muted: var(--bs-secondary-color, #74809a);          /* count / muted text */
     --ss-panel-body-pad: 1.15em;                                   /* body inner padding */
-    --ss-panel-head-pad: 0.85em 1.15em;                            /* head inner padding */
+    --ss-panel-head-pad: 0.35em 1em;                               /* head inner padding */
     --ss-required: var(--bs-danger, #d40404);                      /* required-field asterisk */
 }
 
@@ -350,34 +350,69 @@
     padding: 0 !important;
 }
 
-/* The LiteralField holder that carries the head (if the schema wraps it) — neutralise admin spacing;
-   the visual bar is the inner .ss-panel__head. */
-.ss-panel__head-holder {
+/* ---- Head: the flex header bar. It appears in TWO shapes, both carrying `.ss-panel__head`:
+   (1) a plain <div class="ss-panel__head"> emitted by a component / Mockup template — the bar IS the div;
+   (2) a PanelHeaderField, where the admin wraps the children one level deep, so the element is
+       `.CompositeField.ss-panel__head` (a block wrapper) and the bar is its `> .form__field-holder`.
+   The heading sits left, actions right (space-between). Style the bar on BOTH shapes. ---- */
+.ss-panel__head:not(.CompositeField),
+.CompositeField.ss-panel__head > .form__field-holder {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75em;
+    min-height: 2em;                                 /* keep a stable bar height under the reduced padding */
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: var(--ss-panel-head-pad) !important;
+    background: var(--ss-panel-head-bg);
+    border-bottom: 1px solid var(--ss-panel-border);
+}
+/* The composite wrapper itself is just a block; its inner holder (above) is the visible bar. */
+.CompositeField.ss-panel__head {
+    display: block !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
     max-width: none !important;
 }
-.ss-panel__head-holder::after {
+.CompositeField.ss-panel__head::after {
+    display: none !important;
+}
+.CompositeField.ss-panel__head > .form__field-holder {
+    flex: 1 1 100% !important;
+}
+/* A fully empty composite head (a headerless PanelField, or a PanelField whose head is supplied by a
+   component in its body) collapses to no bar. */
+.CompositeField.ss-panel__head--empty {
     display: none !important;
 }
 
-/* Head bar: title (+ count) left, actions right. */
-.ss-panel__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75em;
-    padding: var(--ss-panel-head-pad);
-    background: var(--ss-panel-head-bg);
-    border-bottom: 1px solid var(--ss-panel-border);
+/* Head children shed admin field chrome (no label, no Bootstrap-row margins). The heading sits left, the
+   actions container sits right; min-width:0 lets a long title truncate instead of shoving the actions off. */
+.ss-panel__head > .form__field-holder > .field {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    min-width: 0;
+}
+.ss-panel__head .form__field-label {
+    display: none !important;
 }
 
+/* Heading: icon + title (+ count). */
 .ss-panel__heading {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 0.5em;
     min-width: 0;
+}
+.ss-panel__icon {
+    flex: none;
+    color: var(--ss-panel-muted);
+    font-size: 1.05em;
+    line-height: 1;
 }
 
 .ss-panel__title {
@@ -408,11 +443,124 @@
     white-space: nowrap;
 }
 
-.ss-panel__actions {
+/* Plain actions div (a component / Mockup template's own static actions, e.g. a pill or an outline button):
+   a right-aligned inline row, sitting at the head bar's right via space-between. */
+.ss-panel__actions:not(.CompositeField) {
     display: flex;
     align-items: center;
     gap: 0.4em;
     flex-shrink: 0;
+}
+
+/* ---- Actions container: a composite grouping the head's static-HTML actions (pills) and the live action
+   buttons into ONE flex child on the right of the bar; its inner holder is the button row. ---- */
+.CompositeField.ss-panel__actions {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    flex: 0 0 auto;
+}
+.CompositeField.ss-panel__actions::after {
+    display: none !important;
+}
+.ss-panel__actions > .form__field-holder {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.4em;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+}
+/* Each action field sheds its row chrome and sizes to content, so the buttons sit inline in the row. */
+.ss-panel__actions > .form__field-holder > .field {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    flex: 0 0 auto;
+}
+.ss-panel__actions > .form__field-holder > .field > .form__field-holder {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+}
+
+/* ---- Action buttons — the ONE standard panel action, so every panel's actions look + sit identically.
+   Outline-secondary face; the head's flexbox places the group on the right and vertically centres it; the
+   row gap spaces multiple buttons (the rightmost stays flush, no trailing margin). A consumer marks its
+   button markup with class `ss-panel__action` and supplies an icon + label — nothing else. ---- */
+.ss-panel__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.38em;
+    margin: 0;
+    padding: 0.34em 0.64em;
+    border-radius: 4px;
+    min-height: 0;
+    font-size: 0.82em;
+    font-weight: 400;
+    line-height: 1.2;
+    white-space: nowrap;
+    color: var(--ss-panel-muted);
+    background: var(--ss-panel-bg);
+    border: 1px solid var(--ss-panel-border);
+    box-shadow: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+.ss-panel__action:hover,
+.ss-panel__action:focus {
+    color: var(--ss-panel-title-color);
+    background: var(--ss-panel-head-bg);
+    border-color: var(--ss-panel-muted);
+    text-decoration: none;
+    outline: none;
+}
+/* Kill any admin button pseudo-icon (e.g. a GridField link's .font-icon-* ::before) — the glyph is the inline <i>. */
+.ss-panel__action::before,
+.ss-panel__action::after {
+    content: none !important;
+}
+.ss-panel__action .ss-icon {
+    font-size: 1em;
+    line-height: 1;
+    flex: none;
+}
+.ss-panel__action-label {
+    margin: 0;
+}
+
+/* A gridfield-backed action (order-admin's HasOneButtonField) renders as:
+     <fieldset class="grid-field"> … <div class="form-row">(.col[empty] + .col-auto[button]) </fieldset>
+   `display:contents` on a <fieldset> is buggy (its padding/border/intrinsic width leak and its contents are
+   not real flex items), so instead reset the fieldset + its wrappers to tight flex boxes that shrink-wrap to
+   the button, and drop the empty LeftFragment column. The head's own flexbox then right-aligns the lot, so the
+   button sits flush like a plain `.ss-panel__action`. Scoped to .ss-panel__actions (never the actions composite
+   itself, which the admin also tags `.form-group`). */
+.ss-panel__actions .grid-field,
+.ss-panel__actions .grid-field__table,
+.ss-panel__actions .hasone,
+.ss-panel__actions .hasone > .form__field-holder,
+.ss-panel__actions .form-row,
+.ss-panel__actions .col-auto {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    min-inline-size: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+.ss-panel__actions .col {
+    display: none !important;   /* empty LeftFragment column — would otherwise leak width */
 }
 
 /* Body: a nested composite. Neutralise admin composite spacing/separator; the padding lives on its
@@ -521,11 +669,8 @@
     display: none !important;
 }
 
-/* A headerless panel: a PanelField with no title/count/actions is just the rounded white card.
-   Collapse the empty head holder so there is no bar. */
-.ss-panel__head-holder:empty {
-    display: none !important;
-}
+/* A headerless panel (no title / count / icon / actions) is just the rounded white card — the empty head
+   bar is collapsed by PanelHeaderField's `.ss-panel__head--empty` modifier (defined with the head above). */
 
 /* Trim the trailing separator/space on the body's last field so it doesn't float above the card edge. */
 .CompositeField.ss-panel__body > .form__field-holder > .field:last-child {
@@ -559,13 +704,13 @@
     flex: 1 1 auto !important;
 }
 
-/* Scrollable body: PanelField->setBodyMaxHeight() injects the per-instance max-height + overflow rule as a
-   scoped <style>; here we only hide its <style> carrier child (the first child of the panel wrapper) so it
-   adds no field spacing. The card's own overflow:hidden clips the body scrollbar to the rounded corners. */
-.CompositeField.ss-panel > .form__field-holder > .ss-panel__style {
+/* Scrollable body: PanelBodyField->setMaxHeight() injects the per-instance max-height + overflow rule as a
+   scoped <style> carried as a hidden child of the body; hide the carrier so it adds no field spacing. The
+   card's own overflow:hidden clips the body scrollbar to the rounded corners. */
+.ss-panel__style {
     display: none !important;
 }
-.CompositeField.ss-panel > .form__field-holder > .ss-panel__style::after {
+.ss-panel__style::after {
     display: none !important;
 }
 
