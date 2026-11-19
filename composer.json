@@ -1,13 +1,30 @@
 {
     "name": "silvershop-suite/cms-ui",
-    "description": "Neutral, structural CMS-form layout primitives for the SilverShop suite: a responsive 12-column GridLayoutField (with an opt-in full-page-width mode and an fr-template escape hatch) and a native-blend PanelField card, so a ModelAdmin edit form can lay panels out in a grid instead of flat tab sprawl. Shop-agnostic, CSS-only, blends with the stock Silverstripe 6 admin (and its dark mode).",
+    "description": "Neutral CMS-form UI primitives for the Silverstripe 6 admin, built for the SilverShop suite but shop-agnostic: a responsive 12-column GridLayoutField, native-blend PanelField cards (icon, count, live header actions, flush or scrollable body), an always-visible GridFieldFilterForm, status badges and row tints for any GridField, and the Lucide icon webfont. Blends with the stock admin and its dark mode.",
     "type": "silverstripe-vendormodule",
-    "keywords": ["silverstripe", "cms", "admin", "forms", "grid", "layout", "panel", "ux"],
+    "keywords": [
+        "silverstripe",
+        "cms",
+        "admin",
+        "forms",
+        "grid",
+        "layout",
+        "panel",
+        "gridfield",
+        "filter",
+        "badges",
+        "icons",
+        "ux"
+    ],
     "license": "BSD-3-Clause",
     "authors": [
         {
-            "name": "SilverShop Contributors",
-            "homepage": "https://github.com/silvershop/silvershop-cms-ui/graphs/contributors"
+            "name": "Remy Vaartjes",
+            "email": "remy@xd.nl",
+            "role": "Lead developer"
+        },
+        {
+            "name": "SilverShop-Suite Contributors"
         }
     ],
     "require": {
@@ -37,7 +54,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "6.x-dev"
+            "dev-main": "1.x-dev"
         },
         "expose": [
             "client"

@@ -1,4 +1,4 @@
-/* silvershop/cms-ui — neutral, structural CMS-form layout primitives.
+/* silvershop-suite/cms-ui — neutral, structural CMS-form layout primitives.
  *
  *   1. GridLayoutField — children laid out on the admin's Bootstrap 5 grid (.ss-grid)
  *   2. CompositeField::setColumnCount() revival (.multicolumn)
